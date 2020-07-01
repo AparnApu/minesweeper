@@ -1,6 +1,5 @@
 # minesweeper
 
-# Title
 ## Table of Contents
 
 - [Introduction](#Introduction)
