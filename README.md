@@ -7,7 +7,6 @@
 - [Motivation](#Motivation)
 - [Working](#Working)
 - [Contributions](#Contributions)
-- [Acknowledgement](#Acknowledgement)
 
 <!-- toc -->
 
