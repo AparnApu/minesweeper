@@ -22,18 +22,15 @@ def placeMines():
                     grid containing mines (minefield)
     '''
     
-    myGrid = []
     # 1/10 chance of finding a mine in each coordinate
-    mineOption = ["X"]
-    for i in range(GRID_SIZE-1):
-        mineOption.append("0")
+    options = ["X", "0"]
+    weights = [0.1, 0.9]
     # returns a 2D list representing the
     # minefield: 0 for empty, and X for a mine
-    for i in range(GRID_SIZE):
-        myGrid.append([])
-        for j in range(GRID_SIZE):
-            myGrid[i].append(random.choice(mineOption))
-    return myGrid
+    return [
+        [random.choices(options, weights)[0] for i in range(GRID_SIZE)]
+        for j in range(GRID_SIZE)
+    ]
 
 
 ######################################################
@@ -53,12 +50,7 @@ def makeBoard():
                     grid with hidden cells (gameboard, ie, what player sees)
     '''
     
-    myGrid = []
-    for i in range(GRID_SIZE):
-        myGrid.append([])
-        for j in range(GRID_SIZE):
-            myGrid[i].append("#")
-    return myGrid
+    return [['#'] * GRID_SIZE for i in range(GRID_SIZE)]
 
 
 ######################################################
@@ -116,12 +108,7 @@ def countHiddenCells(myGameboard):
                     count (int)
     '''
     
-    count = 0
-    for row in myGameboard:
-        for element in row:
-            if element == "#":
-                count += 1
-    return count
+    return sum(sum(col == '#' for col in row) for row in myGameboard)
 
 
 ######################################################
@@ -141,12 +128,7 @@ def countAllMines(myMinefield):
                     count (int)
     '''
     
-    count = 0
-    for row in myMinefield:
-        for element in row:
-            if element == "X":
-                count += 1
-    return count
+    return sum(sum(col == 'X' for col in row) for row in myMinefield)
 
 
 ######################################################
@@ -169,12 +151,8 @@ def isMineAt(myMinefield, row, column):
     '''
     
     if 0 <= row < GRID_SIZE and 0 <= column < GRID_SIZE:
-        if myMinefield[row][column] == "X":
-            return True
-        else:
-            return False
-    else:
-        return False
+        return myMinefield[row][column] == "X"
+    return False
 
 
 ######################################################
@@ -248,10 +226,7 @@ def isValid(row, column):
                     True/ False (boolean)
     '''
     
-    if (0 <= row < GRID_SIZE) and (0 <= column < GRID_SIZE):
-        return True
-    else:
-        return False
+    return (0 <= row < GRID_SIZE) and (0 <= column < GRID_SIZE)
 
 
 ######################################################
@@ -295,22 +270,13 @@ def reveal(myGameboard, myMinefield, row, col):
     else:
         if numAdjacentMines == 0:
             myGameboard[row][col] = " "
-            if isValid(row-1, col-1) and not isMineAt(myMinefield, row-1,col-1):
-                reveal(myGameboard, myMinefield, row-1, col-1)
-            if isValid(row-1, col) and not isMineAt(myMinefield, row-1, col):
-                reveal(myGameboard, myMinefield, row-1, col)
-            if isValid(row-1, col+1) and not isMineAt(myMinefield, row-1, col+1):
-                reveal(myGameboard, myMinefield, row-1, col+1)
-            if isValid(row, col-1) and not isMineAt(myMinefield, row, col-1):
-                reveal(myGameboard, myMinefield, row, col-1)
-            if isValid(row, col+1) and not isMineAt(myMinefield, row, col+1):
-                reveal(myGameboard, myMinefield, row, col+1)
-            if isValid(row+1, col-1) and not isMineAt(myMinefield, row+1, col-1):
-                reveal(myGameboard, myMinefield, row+1, col-1)
-            if isValid(row+1, col) and not isMineAt(myMinefield, row+1, col):
-                reveal(myGameboard, myMinefield, row+1, col)
-            if isValid(row+1, col+1) and not isMineAt(myMinefield, row+1, col+1):
-                reveal(myGameboard, myMinefield, row+1, col+1)
+            pairs = [
+                (row - 1, col - 1), (row - 1, col), (row - 1, col + 1), (row, col - 1),
+                (row, col + 1), (row + 1, col - 1), (row + 1, col), (row + 1, col + 1)
+            ]
+            for item in pairs:
+                if isValid(*item) and not isMineAt(myMinefield, *item):
+                    reveal(myGameboard, myMinefield, *item)
         
         else:
             myGameboard[row][col] = numAdjacentMines
@@ -333,11 +299,16 @@ def isValidInput(myStr):
                     True/ False (boolean)
     '''
     
-    if len(myStr) == 3 and myStr[0].isnumeric() and myStr[1] == "," and myStr[2].isnumeric() and 0 <= int(myStr[0]) < GRID_SIZE and 0 <= int(myStr[2]) < GRID_SIZE:
+    first = second = -1
+    
+    if __import__('re').match('^[0-9],[0-9]$', myStr):
+        first, comma, second = myStr
+    
+    if (0 <= int(first) < GRID_SIZE) and (0 <= int(second) < GRID_SIZE):
         return True
-    else:
-        print("\nPlease enter a valid input")
-        return False
+    
+    print("\nPlease enter a valid input")
+    return False
 
 ######################################################
 # main function
